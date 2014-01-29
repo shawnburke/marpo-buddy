@@ -16,6 +16,20 @@ block content
         .checkin-item {
             margin-bottom:5px;
         }
+        .checkins {
+            max-height: 500px;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+        .hbuffer {
+            margin-right:5px;
+            margin-left:5px;
+        }
+
+        .vbuffer {
+            margin-top:5px;
+            margin-bottom:5px;
+        }
 
     script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyDQcWdxaMowZzZEQEYKMSMBa21pcirB4sQ&sensor=true')
 
@@ -56,16 +70,19 @@ block content
 
         script#checkin_detail_template(type='text/html')
             div.well
-                div.row.
+                div.row
+                    div.col-xs-12.map-canvas
+                div.row.vbuffer
+                    div.col-xs-12.
                         <% if (value.url) { %>
-                              <div class='col-md-3'>
-                                <img src='<%=value.url%>'/>
+                              <div class='pull-left'>
+                                <img class='img-thumbnail' src='<%=value.url%>'/>
                               </div>
                         <%}%>
-                        <div class='col-md-9'>
+                        <div class='pull-left hbuffer'>
                             <h4><%=value.comment%></h4>
                             <h5><%=value.description%></h5>
-                            <h6><%=value.created.toDateString()%></h6>
+                            <h6><%=value.created && value.created.toDateString() || ''%></h6>
                         </div>
 
 
@@ -73,9 +90,9 @@ block content
         script#new_checkin_template(type='text/html')
                 div.well
                     div.row
-                        div.col-md-6.map-canvas
+                        div.col-xs-6.map-canvas
                             h5 Loading Map...
-                        div.col-md-6
+                        div.col-xs-6
                              form(role='form')
                                 .form-group
                                     label.sr-only(for='comment') Comment:

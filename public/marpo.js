@@ -224,6 +224,19 @@ var MapItemView = Backbone.View.extend( {
 		}
 		return this._map;
 	},
+	moveTo: function(el) {
+		if (!this._map) {
+			this.$el = el;
+			this._ensureMap();
+		}
+		else {
+			var mc = $('.map-canvas', this.$el);
+			var targetMc = $('.map-canvas', el);
+
+			el.replaceWith(mc, targetMc);
+			this.$el = el;
+		}
+	},
 	addMarkers: function(markers) {
 		
 
@@ -304,7 +317,7 @@ var CheckinDetailView = TemplatedView.extend({
 
 				if (r && r.success) {
 					self.checkin = r.result;
-					self.render();
+					
 
 					if (r.result.defaultMetadata) {
 
@@ -319,6 +332,9 @@ var CheckinDetailView = TemplatedView.extend({
 						})
 
 					}
+					else {
+						self.render();
+					}
 				}
 
 			});
@@ -327,6 +343,44 @@ var CheckinDetailView = TemplatedView.extend({
 	},
 	getValue: function() {
 		return this.checkin;
+	},
+	ensureMap: function(el) {
+		var self = this;
+
+
+
+		if (this.checkin && this.checkin.location) {
+
+			if (!self.mapItemView) {
+				self.mapItemView = new MapItemView( {
+				 	el: el
+				 });
+			}
+			else {
+				self.mapItemView.moveTo(el);
+			}
+
+			self.mapItemView.zoomLevel = 16;
+			self.mapItemView.center = this.checkin.location;
+			self.mapItemView.addMarkers([
+				{
+					location: this.checkin.location,
+					title: this.checkin.comment
+				}
+			]);
+			self.mapItemView.render();
+		}
+		return self.mapItemView;
+	},
+	render: function() {
+
+
+		var el = this.renderTemplate(this.getValue(), false);
+		this.$el.html(el);
+		this.ensureMap(el)
+		
+		this._rendered = true;
+		return this;
 	}
 
 })
