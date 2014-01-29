@@ -1,6 +1,6 @@
 
 
-Buddy.init(creds.appid, creds.appkey);
+Buddy.init(creds.appid, creds.appkey, {root: window.service_root});
 
 
 var MarpoRouter = Backbone.Router.extend({

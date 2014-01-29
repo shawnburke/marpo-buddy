@@ -26,7 +26,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.locals = ({
 	title : "Marpo!",
 	appid: process.env.BUDDY_APPID,
-	appkey: process.env.BUDDY_APPKEY
+	appkey: process.env.BUDDY_APPKEY,
+	service_root: process.env.BUDDY_ROOT
 });
 
 if (!process.env.BUDDY_APPKEY || !process.env.BUDDY_APPID) {

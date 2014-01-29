@@ -1,6 +1,6 @@
 window.Buddy = function(root) {
 
-	root = root || "http://windows:50800"
+	root = root || "http://api.buddyplatform.com"
 
 	var buddy = {};
 
@@ -141,6 +141,10 @@ window.Buddy = function(root) {
 
 		_appKey = appKey;
 
+		if (_options.root) {
+			root = options.root;
+		}
+
 		getSettings(true);
 		
 		buddy.registerDevice(appId, appKey);
@@ -169,7 +173,7 @@ window.Buddy = function(root) {
 			if (r.success) {
 				_appId = appId || _appId;
 				_appKey = appKey || _appKey;
-				updateSettings({app_id: _appId, app_key:appKey});
+				updateSettings({app_id: _appId, app_key:appKey, service_root: r.serviceRoot});
 				setAccessToken("device", r.result);
 			}
 			callback && callback(err, r);
@@ -444,7 +448,8 @@ function convertDates(obj, seen) {
 			}
 		}
 		
-
+		var s = getSettings();
+		var r = s.service_root || root;
 	    $.ajax({
 			method: method,
 			url: root + url,
