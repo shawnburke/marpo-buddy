@@ -1,0 +1,159 @@
+extends layout
+
+block content
+
+    style.
+        .map-canvas {
+            height:200px;
+        }
+        .checkin-image {
+            height:50px;
+            width:50px;
+        }
+        .checkin-text {
+            margin-left:20px;
+        }
+        .checkin-item {
+            margin-bottom:5px;
+        }
+
+    script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyDQcWdxaMowZzZEQEYKMSMBa21pcirB4sQ&sensor=true')
+
+
+
+
+    div.app-root.container
+        div.row
+            div.col-md-8
+                h1=title
+                h2.loading Loading...
+            div.col-md-4
+                div.pull-right
+                    a.btn.btn-mini.auth.logout(href='#') Logout
+        hr
+        div.row
+
+            div.col-md-12
+                div.menu.auth
+                    ul.nav.nav-pills
+                        li.active
+                            a(href='#') Home
+                        li
+                            a(href='#checkin') Add Checkin
+                div.view-target   
+
+
+        script#home_template(type='text/html')
+                div.well
+                        div.row
+                            div.col-md-6.map-canvas
+                                h5 Loading Map...
+                            div.col-md-6
+                                b Checkins
+                                div.checkins
+                                    h5 Loading Checkins...
+
+
+        script#checkin_detail_template(type='text/html')
+            div.well
+                div.row.
+                        <% if (value.url) { %>
+                              <div class='col-md-3'>
+                                <img src='<%=value.url%>'/>
+                              </div>
+                        <%}%>
+                        <div class='col-md-9'>
+                            <h4><%=value.comment%></h4>
+                            <h5><%=value.description%></h5>
+                            <h6><%=value.created.toDateString()%></h6>
+                        </div>
+
+
+
+        script#new_checkin_template(type='text/html')
+                div.well
+                    div.row
+                        div.col-md-6.map-canvas
+                            h5 Loading Map...
+                        div.col-md-6
+                             form(role='form')
+                                .form-group
+                                    label.sr-only(for='comment') Comment:
+                                    input#comment.form-control(type='text', placeholder='Enter Comment')
+                                .form-group
+                                    label.sr-only(for='desc') Description:
+                                    textarea#desc.form-control(placeholder='Enter Description')
+                                .form-group
+                                    label.sr-only(for='file') Image:
+                                    input#image.form-control(type='file', placeholder='Enter Description')
+                               button.btn.btn-default.add-checkin(type='submit') Submit
+                            div.error.text-danger
+                            div.status.text-info
+
+
+        script#checkin_item(type='text/html')
+            div.row.checkin-item
+                div.col-md-12
+                    div.checkin-image.pull-left
+                    div.checkin-text.pull-left
+                        div.
+                            <b><%=value.comment%></b>
+                            
+                        div.text-muted.
+                            <%=value.description%>
+                        div.
+                            <a href='#details/<%=value.id%>'>Details...</a>
+
+        script#login_template(type='text/html')
+            div.well
+
+                    ul.nav.nav-tabs
+                      li.active
+                        a(href='#login', data-toggle='tab') 
+                            H4 Login
+                      li
+                        a(href='#signup', data-toggle='tab') 
+                            H4 Signup
+                    //
+                       Tab panes 
+                    .tab-content
+                      #login.tab-pane.login.active
+                        form(role='form')
+                            .form-group
+                                label.sr-only(for='email') Email address
+                                input#email.form-control(type='email', placeholder='Enter email')
+                            .form-group
+                                label.sr-only(for='password') Password
+                                input#password.form-control(type='password', placeholder='Password')
+                            .checkbox
+                                label
+                                  input#remember(type='checkbox')
+                                  | Remember me
+                            button.btn.btn-default(type='submit') Login
+                            div.error.text-danger
+                      #signup.tab-pane.signup
+                            .form-group
+                                div.row
+                                    div.col-md-6
+                                        label.sr-only(for='firstname') First Name
+                                        input#firstname.form-control(type='name', placeholder='Enter First Name')
+                                     div.col-md-6
+                                        label.sr-only(for='lastname') First Name
+                                        input#lastname.form-control(type='name', placeholder='Enter Last Name')
+                            .form-group
+                                label.sr-only(for='email') Email address
+                                input#email.form-control(type='email', placeholder='Enter email')
+                            .form-group
+                                label.sr-only(for='password') Password
+                                input#password.form-control(type='password', placeholder='Password')
+                            .checkbox
+                                label
+                                  input#remember(type='checkbox')
+                                  | Remember me
+                            button.btn.btn-default(type='submit') Login
+                            div.error.text-danger
+
+
+
+                
+                     
