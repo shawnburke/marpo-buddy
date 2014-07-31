@@ -1,6 +1,16 @@
 
 
-Buddy.init(creds.appid, creds.appkey, {root: window.service_root});
+Buddy.init(creds.appid, creds.appkey, {
+	root: window.service_root,
+	output: {
+		log: function(str) {
+			console.log("MARPO: " + str);
+		},
+		warn: function(str) {
+			console.log("MARPO WARN: " + str)
+		}
+	}
+});
 
 
 var MarpoRouter = Backbone.Router.extend({
@@ -209,7 +219,7 @@ var MapItemView = Backbone.View.extend( {
 
 			if (mapCanvas.length) {
 					var mapOptions = {
-			          center: new google.maps.LatLng(this.center.latitude, this.center.longitude),
+			          center: new google.maps.LatLng(this.center.lat, this.center.lng),
 			          zoom: this.zoomLevel || 12
 			        };
 
@@ -272,8 +282,8 @@ var MapItemView = Backbone.View.extend( {
 		_.each(this._markers, function(m){
 
 			if (!m.marker && map) {
-					var lat = m.latitude || m.location && m.location.latitude;
-					var lng = m.longitude || m.location && m.location.longitude;
+					var lat = m.lat || m.location && m.location.lat;
+					var lng = m.lng || m.location && m.location.lng;
 
 					// To add the marker to the map, use the 'map' property
 					var marker = new google.maps.Marker({
@@ -290,7 +300,7 @@ var MapItemView = Backbone.View.extend( {
 		if (zoom) {
 			this._map.setZoom(zoom);
 		}
-		this._map.panTo(new google.maps.LatLng(loc.latitude, loc.longitude));
+		this._map.panTo(new google.maps.LatLng(loc.lat, loc.lng));
 	},
 	render: function() {
 
@@ -313,15 +323,15 @@ var CheckinDetailView = TemplatedView.extend({
 		if (args.id) {
 			var self = this;
 			this.checkin = {id: args.id};
-			Buddy.makeRequest("GET", '/checkins/' + args.id, function(err, r){
+			Buddy.get('/checkins/' + args.id, function(err, r){
 
 				if (r && r.success) {
 					self.checkin = r.result;
 					
 
-					if (r.result.defaultMetadata) {
+					if (r.result.tag) {
 
-						Buddy.makeRequest("GET",'/pictures/' + r.result.defaultMetadata, {
+						Buddy.get('/pictures/' + r.result.tag, {
 
 								size:200
 						}, function(err, r){
@@ -424,9 +434,9 @@ var CheckinItemView = TemplatedView.extend({
 			self.fileUrl = url;
 		}
 
-		if (this.checkin.defaultMetadata) {
+		if (this.checkin.tag) {
 			if (!this.fileUrl) {
-				Buddy.makeRequest("GET",'/pictures/' + this.checkin.defaultMetadata, {
+				Buddy.get('/pictures/' + this.checkin.tag, {
 
 						size:50
 				}, function(err, r){
@@ -455,7 +465,7 @@ var HomeView = TemplatedView.extend({
 
 		var checkinList = $('.checkins', this.$el);
 		var self = this;
-		Buddy.makeRequest("GET", '/checkins', function(err, result){
+		Buddy.get('/checkins', function(err, result){
 
 			if (!err && result.success) {
 				var map;
@@ -525,7 +535,21 @@ var AddCheckinView = TemplatedView.extend({
 	},
 	_addCheckin: function() {
 
+		if (this._creating) return;
 		var self = this;
+		this._creating = true;
+		$('.add-checkin').addClass('disabled');
+
+		function finish(nav) {
+			$('.add-checkin').removeClass('disabled');
+			self._creating = false;
+			self._status();
+			if (typeof nav == 'string') {
+				router.go(nav);
+			}
+		}
+
+
 		this._status("Fetching location...");
 		getLocation(function (err, loc) {	
 				self._status("Uploading...");
@@ -535,25 +559,29 @@ var AddCheckinView = TemplatedView.extend({
 				function doCheckin(err, photoResult) {
 
 					if (err) {
+						finish();
 						return;
 					}
 
 					self._status("Creating Checkin...");
 					
-					Buddy.makeRequest("POST", "/checkins", {
+					Buddy.post("/checkins", {
 								location: l,
 								comment: $('#comment', self.$el).val() || null,
 								description: $('#desc', self.$el).val() || null,
-								defaultMetadata: photoResult && photoResult.result.id
+								tag: photoResult && photoResult.result.id,
+								permissions: 'App'
 							}, 
 							function(err, result) {
+								var nav = null;
+
 								if (err) {
 									self._status(err.message);
 								}
 								else {
-									self._status();
-									router.go('');
+									nav = '';
 								}
+								finish(nav);
 							}
 					);
 				}
@@ -563,7 +591,7 @@ var AddCheckinView = TemplatedView.extend({
 				if (file.length && file[0].files && file[0].files.length) {
 					self._status("Uploading Photo...");
 					var fileItem = file[0].files[0];
-					Buddy.makeRequest("POST", "/pictures",{
+					Buddy.post("/pictures",{
 						data: fileItem,
 						location: l
 					}, doCheckin);
